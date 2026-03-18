@@ -159,102 +159,90 @@ def Sa_T(p, PGA, Sa_s, Tc, Td):
     else:
         # Displacement-controlled decay
         return Sa_s * (Tc / p) * math.sqrt(Td / p)
+    
+def _build_periods(max_period, Tc, Td):
+    increment = max_period * 0.01
+    p = 0.0
+    periods = []
+    while p <= max_period + 1e-9:
+        periods.append(round(p, 5))
+        p += increment
+ 
+    # Force-include spectral corner points
+    for key in [0.1, round(Tc, 5), round(Td, 5)]:
+        if 0.0 < key < max_period:
+            periods.append(key)
+ 
+    return sorted(set(periods))
 
-
-# ============================================================
-# HORIZONTAL DESIGN SPECTRUM
-# ============================================================
 
 def NZ_input_2025(PGA, Sa_s, Tc, Td, mu, Sp, fault_dist, max_period):
     """
-    Builds horizontal design spectrum Cd(T) and vertical Cv(T).
-    Replaces NZ_input() from the 2004 plugin.
-
     Parameters
     ----------
-    PGA         : Peak ground acceleration (g) — from Table 3.1/3.2 for chosen site class
-    Sa_s        : Short-period spectral acceleration (g) — from Table 3.1/3.2
-    Tc          : Spectral acceleration plateau corner period (s) — from Table 3.1/3.2
-    Td          : Spectral velocity plateau corner period (s) — from Table 3.1/3.2
-    mu          : Structural ductility factor μ (user input, default 1.0)
-    Sp          : Structural performance factor (user input, default 0.7)
-    fault_dist  : Distance from nearest major fault (km) — for vertical spectrum
-    max_period  : Maximum period (s)
-
-    Returns JSON with keys: period, value_h (horizontal), value_v (vertical)
+    PGA        : Peak ground acceleration (g) — Table 3.1 / 3.2, chosen site class
+    Sa_s       : Short-period spectral acceleration (g) — Table 3.1 / 3.2
+    Tc         : Spectral acceleration plateau corner period (s) — Table 3.1 / 3.2
+    Td         : Spectral velocity plateau corner period (s) — Table 3.1 / 3.2
+    mu         : Structural ductility factor μ — Section 4.3
+    Sp         : Structural performance factor — Section 4.4
+    fault_dist : Distance from nearest major fault D (km) — Table 3.1 / 3.2
+    max_period : Maximum period (s)
     """
-    p = 0.0
-    per_list = []
-    increment = max_period * 0.01
-    while p <= max_period + 1e-9:
-        per_list.append(round(p, 5))
-        p += increment
-
-    # Always include spectral corner points so kinks are never missed
-    for key_T in [0.1, Tc, Td]:
-        key_T = round(key_T, 5)
-        if 0 < key_T < max_period:
-            per_list.append(key_T)
-
-    period = sorted(set(per_list))
-
-    # --- kμ = μ for all site classes (Section 5.2.1.1) ---
+    periods = _build_periods(max_period, Tc, Td)
+ 
+    # kμ = μ for all site classes  [Section 5.2.1.1]
     k_mu = mu
-
-    # --- Horizontal: Cd(T) = Sa(T) * Sp / kμ  [Eq. 5.3] ---
+ 
     value_h = []
-    for p in period:
-        sa = Sa_T(p, PGA, Sa_s, Tc, Td)
-        value_h.append(round(sa * Sp / k_mu, 6))
-
-    # --- Vertical: Cv(T) = Sa(T), with 0.7× reduction if D ≤ 10 km ---
-    near_fault = fault_dist <= 10.0
     value_v = []
-    for p in period:
+ 
+    for p in periods:
         sa = Sa_T(p, PGA, Sa_s, Tc, Td)
-        value_v.append(round(0.7 * sa if near_fault else sa, 6))
-
+ 
+        # ── Horizontal design spectrum  [Eq. 5.3] ──────────────────────────
+        # Cd(T) = C(T) * Sp / kμ
+        # Excel: =Sa(T) * (Sp / mu)
+        Cd = sa * Sp / k_mu
+        value_h.append(round(Cd, 6))
+ 
+        # ── Vertical design spectrum  [Eqs 3.10 / 3.11] ────────────────────
+        # D > 10 km  →  Cv(Tv) = 0.7 * C(Tv)        [Eq. 3.10]
+        # D ≤ 10 km  →  Cv(Tv) = CI(Tv)              [Eq. 3.11]
+        
+        if fault_dist > 10:
+            Cv = 0.7 * sa
+        else:
+            Cv = sa   # CI(Tv) — site class forced to I by UI
+        value_v.append(round(Cv, 6))
+ 
     return json.dumps({
-        "period":  period,
+        "period":  periods,
         "value_h": value_h,
         "value_v": value_v,
     })
-
-
 # ============================================================
 # MAIN ENTRY POINT
 # ============================================================
 
 def main_NZS1170_5_2025(
-    func_name:   str,
-    PGA:         float,   # from Table 3.1/3.2 for chosen location + site class
-    Sa_s:        float,   # from Table 3.1/3.2
-    Tc:          float,   # from Table 3.1/3.2
-    Td:          float,   # from Table 3.1/3.2
-    mu:          float,   # structural ductility factor μ
-    Sp:          float,   # structural performance factor
-    fault_dist:  float,   # distance from nearest major fault (km)
-    max_period:  float,   # maximum period (s)
-    direction:   str = "H",  # "H" = horizontal, "V" = vertical
+    func_name,
+    PGA, Sa_s, Tc, Td,
+    mu, Sp,
+    fault_dist,
+    max_period,
+    direction      # "H" or "V"
 ):
-    """
-    Called by the React frontend via PyScript.
-
-    direction: "H" writes horizontal Cd(T), "V" writes vertical Cv(T).
-               Call twice (once per direction) to register both spectra in Midas.
-    """
-    # Compute both spectra
-    inputs = json.loads(
+    data = json.loads(
         NZ_input_2025(PGA, Sa_s, Tc, Td, mu, Sp, fault_dist, max_period)
     )
-    aPeriod = inputs["period"]
-    aValue  = inputs["value_h"] if direction == "H" else inputs["value_v"]
-
-
+    periods = data["period"]
+    values  = data["value_h"] if direction == "H" else data["value_v"]
+ 
+    aFUNC = to_aFUNC(periods, values)
+    GRAV  = UNIT_GET()
+ 
     civilApp = MidasAPI(Product.CIVIL, "KR")
     ID       = civilApp.db_get_next_id("SPFC")
-    name     = func_name
-    aFUNC    = to_aFUNC(aPeriod, aValue)
-    GRAV     = UNIT_GET()
-
-    return SPFC_UPDATE(ID, name, GRAV, aFUNC)
+ 
+    return SPFC_UPDATE(ID, func_name, GRAV, aFUNC)
