@@ -108,7 +108,7 @@ def UNIT_GET():
         GRAV_const = 980.6
     elif dist_unit == "MM":
         GRAV_const = 9806
-    elif dist_unit == "IN":
+    elif dist_unit == "In":
         GRAV_const = 386.063
     else:
         GRAV_const = 32.1719

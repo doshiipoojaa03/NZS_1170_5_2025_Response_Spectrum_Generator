@@ -94,31 +94,31 @@ const CompValidCheckDialogNZS117052025 = (props: any) => {
         reason: "",
       },
       {
-        title: "Site Class",
+        title: "Ground Type ",
         value: site_class,
         error: !valids.VarNZS1170_5_2025_SiteClass(site_class),
         reason: "",
       },
       {
-        title: "PGA (g)",
+        title: "PGA ",
         value: pga,
         error: !valids.VarNZS1170_5_2025_PGA(pga),
         reason: "PGA must be greater than 0.",
       },
       {
-        title: "Short Period Spectral Acc. Sa,s (g)",
+        title: "Short Period Spectral Acceleration (Sₐ,ₛ) ",
         value: sa_s,
         error: !valids.VarNZS1170_5_2025_Sa_s(sa_s),
         reason: "Sa,s must be greater than 0.",
       },
       {
-        title: "Acc. Plateau Corner Period Tc (s)",
+        title: "Spectral Acceleration Plateau Corner Period (Tc)",
         value: tc,
         error: !valids.VarNZS1170_5_2025_Tc(tc),
         reason: "Tc must be greater than 0.",
       },
       {
-        title: "Vel. Plateau Corner Period Td (s)",
+        title: "Spectral Velocity Plateau Corner Period (Td)",
         value: td,
         error: !valids.VarNZS1170_5_2025_Td(td),
         reason: "Td must be greater than 0.",
@@ -152,7 +152,7 @@ const CompValidCheckDialogNZS117052025 = (props: any) => {
     }
 
     baseCheckList.push({
-      title: "Maximum Period (s)",
+      title: "Maximum Period ",
       value: maximum_period,
       error: !valids.VarMaximumPeriod(maximum_period),
       reason: "Maximum Period must be greater than 0.",
