@@ -1,4 +1,5 @@
-![](https://hubs.ly/Q02hxwqB0)
+<!-- ![](https://www.youtube.com/watch?v=LXd2onRb4Vk) -->
+<iframe src="https://www.youtube.com/embed/LXd2onRb4Vk" title="How to use Response Spectrum Generator | MIDAS CIVIL NX" allowfullscreen></iframe>
 
 # Response Spectrum Generator
 
