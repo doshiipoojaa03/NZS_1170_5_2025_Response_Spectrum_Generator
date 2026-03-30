@@ -21,7 +21,7 @@ import {
 import CompTypographyAndTextField        from "./Components/TypographyAndTextField";
 // import CompTypographyAndTextFieldNumOnly from "./Components/TypographyAndTextFieldNumOnly";
 import CompDesignSpectrum                from "./Components/DesignSpectrum";
-import CompSeismicDataNZS117052025       from "./Components/SeismicData_NZS_1170_5_2025";
+import CompSeismicDataNZS117052025       from "./Components/SeismicData_SNZ_1170_5_2025";
 import CompHelpDialog                    from "./Components/HelpDialog";
 import CompUpdate                        from "./Components/Update";
 import CompPreviewRight                  from "./Components/PreviewRight";

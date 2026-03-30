@@ -33,9 +33,9 @@ export const VarMaximumPeriod = atom({
   default: "6.0",
 });
 
-// Design Spectrum dropdown — only NZS 1170.5 (2025)
+// Design Spectrum dropdown — only SNZ TS 1170.5:2025
 const designSpectrumCodes: Array<[string, number]> = [
-  ["NZS 1170.5 (2025)", 1],
+  ["SNZ TS 1170.5:2025", 1],
 ];
 export const VarDesignSpectrumList = atom({
   key: "VarDesignSpectrumList",
@@ -52,7 +52,7 @@ export const VarDesignSpectrum = atom({
   default: 1,
 });
 
-// ─── NZS 1170.5 : 2025 atoms ─────────────────────────────────────────────────
+// ─── SNZ  TS 1170.5 : 2025 atoms ─────────────────────────────────────────────────
 // Spectrum type dropdown — mirrors UNE spectrumType pattern
 const nzs_spectrumType: Array<[string, number]> = [
   ["Horizontal Design Spectrum", 1],
